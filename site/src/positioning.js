@@ -63,12 +63,21 @@ export function trilaterate([p1, p2, p3], [r1, r2, r3]) {
 export function minMax(anchors, r) {
   const x0 = Math.max(...anchors.map((p, i) => p.x - r[i])), x1 = Math.min(...anchors.map((p, i) => p.x + r[i]));
   const y0 = Math.max(...anchors.map((p, i) => p.y - r[i])), y1 = Math.min(...anchors.map((p, i) => p.y + r[i]));
-  return { x: (x0 + x1) / 2, y: (y0 + y1) / 2, box: [x0, y0, x1, y1] };
+  // empty: the squares do not overlap (x0 > x1 or y0 > y1); the "centre" is then the midpoint of crossed bounds.
+  return { x: (x0 + x1) / 2, y: (y0 + y1) / 2, box: [x0, y0, x1, y1], empty: x0 > x1 || y0 > y1 };
 }
+
+// Baselines (not in the notebook). Nearest anchor: the anchor with the smallest estimated distance.
+export function nearestAnchor(anchors, r) {
+  const i = r.indexOf(Math.min(...r));
+  return { x: anchors[i].x, y: anchors[i].y, index: i };
+}
+// Unweighted centroid of the anchors: ignores the signal entirely, so any method should beat it.
+export const centroid = (anchors) => ({ x: mean(anchors.map((p) => p.x)), y: mean(anchors.map((p) => p.y)) });
 
 export function estimateAll({ wifi, ble, anchors, wifiAN, bleAN }) {
   const rw = meanDists(wifi, wifiAN.a, wifiAN.n), rb = meanDists(ble, bleAN.a, bleAN.n);
-  return { wcl: wcl(wifi, anchors, wifiAN.a, wifiAN.n), tri: trilaterate(anchors, rb), minmax: minMax(anchors, rb), rWifi: rw, rBle: rb };
+  return { wcl: wcl(wifi, anchors, wifiAN.a, wifiAN.n), tri: trilaterate(anchors, rb), minmax: minMax(anchors, rb), nearest: nearestAnchor(anchors, rw), centroid: centroid(anchors), rWifi: rw, rBle: rb };
 }
 
 // Two-point fit of RSS = A - 10 n log10(d), then predict the held-out distance (leave-one-out calibration).

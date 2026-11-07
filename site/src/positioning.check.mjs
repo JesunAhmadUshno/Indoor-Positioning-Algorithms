@@ -43,6 +43,25 @@ const mm = P.minMax(P.ANCHORS, [0.5, 1, 1.5]);
 assert.deepEqual(mm.box, [1.5, 0, 1.5, 0.5]);
 assert.deepEqual([mm.x, mm.y], [1.5, 0.25]);
 
+// Default min-max on the notebook's BLE distances: the three squares do not overlap in x
+// (max left edge 2 - 0.5104 = 1.4896 > min right edge 0 + 1.1546), so the box is empty.
+const mmDef = P.minMax(P.ANCHORS, rb);
+assert.equal(mmDef.empty, true);
+close(mmDef.box[0], 2 - rb[0], 1e-12, 'minmax x0'); close(mmDef.box[2], rb[2], 1e-12, 'minmax x1');
+assert.equal(mm.empty, false);
+
+// Baselines (new): nearest anchor on Wi-Fi distances is anchor 1 at (2, 0), 0.5 m from the tag;
+// the unweighted anchor centroid is (7/6, 1/3), sqrt(2)/3 = 0.4714 m from the tag.
+const near = P.nearestAnchor(P.ANCHORS, rw);
+assert.deepEqual(near, { x: 2, y: 0, index: 0 });
+assert.equal(P.nearestAnchor(P.ANCHORS, rb).index, 0);
+close(P.dist(near, P.TRUTH), 0.5, 1e-12, 'nearest error');
+const cen = P.centroid(P.ANCHORS);
+close(cen.x, 7 / 6, 1e-12, 'centroid x'); close(cen.y, 1 / 3, 1e-12, 'centroid y');
+close(P.dist(cen, P.TRUTH), Math.SQRT2 / 3, 1e-12, 'centroid error');
+const all = P.estimateAll({ wifi, ble, anchors: P.ANCHORS, wifiAN: P.WIFI_PRESET, bleAN: P.BLE_PRESET });
+assert.deepEqual([all.nearest.index, all.centroid.x, all.minmax.empty], [0, cen.x, true]);
+
 // Leave-one-out calibration: a two-point fit through exact model points recovers A and n.
 const exact = [0.5, 1, 1.5].map((d) => ({ d, rss: P.calcRss(d, -36, 1.5) }));
 P.leaveOneOut(exact).forEach((r) => { close(r.a, -36, 1e-9, 'loo a'); close(r.n, 1.5, 1e-9, 'loo n'); close(r.err, 0, 1e-9, 'loo err'); });

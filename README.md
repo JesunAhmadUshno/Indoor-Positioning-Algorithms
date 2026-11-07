@@ -38,7 +38,8 @@ The room, devices, heights and orientations were not recorded. The geometry belo
 - **Zeros in `dynamichall.csv`.** Before a channel's first reading the file stores 0 dBm. The notebook's standard deviations include those zeros (Topic1: 6.60); treating them as missing gives 3.75.
 - **Plot labels.** In the notebook, `top4 = df[5]` and `top5 = df[6]`, so the "SAT 4" plot shows Topic5, "SAT 5" shows Topic6, and Topic4/Topic6 are never plotted. The notebook is left unchanged.
 - **Kalman filter is synthetic.** It runs only on simulated data and never on the recorded RSSI.
-- **Min-max** is mentioned in the repository description but not implemented in the notebook. The dashboard computes it as a new, clearly labelled method.
+- **Min-max** is mentioned in the repository description but not implemented in the notebook. The dashboard computes it as a new, clearly labelled method. At the default settings its box is empty (the three BLE squares do not overlap), so its point is only the midpoint of crossed bounds.
+- **Baselines** (new, on the dashboard): nearest anchor (0.500 m error) and the unweighted anchor centroid (0.471 m), both beaten by weighted centroid and trilateration at this single test point.
 - `Trilateration.py` and `wifi.py`, named in the notebook's markdown, are not in the repository. `beacon.dot` is empty.
 
 See [docs/research-review.md](docs/research-review.md) for a fuller review.

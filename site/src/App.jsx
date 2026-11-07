@@ -22,13 +22,19 @@ const RAW_COUNT = WIFI_BOM[0].length;
 const TRUE_D = P.ANCHORS.map((a) => P.dist(a, P.TRUTH));
 const HALL = P.parseHall(hallCsv);
 const BASE = P.estimateAll({ wifi: WIFI, ble: BLE, anchors: P.ANCHORS, wifiAN: P.WIFI_PRESET, bleAN: P.BLE_PRESET });
-const ERR = { wcl: P.dist(BASE.wcl, P.TRUTH), tri: P.dist(BASE.tri, P.TRUTH), minmax: P.dist(BASE.minmax, P.TRUTH) };
+const ERR = { wcl: P.dist(BASE.wcl, P.TRUTH), tri: P.dist(BASE.tri, P.TRUTH), minmax: P.dist(BASE.minmax, P.TRUTH), nearest: P.dist(BASE.nearest, P.TRUTH), centroid: P.dist(BASE.centroid, P.TRUTH) };
 
 const METHODS = [
   { k: 'wcl', name: 'Weighted centroid (Wi-Fi)', c: 'var(--primary)', src: 'notebook' },
   { k: 'tri', name: 'Trilateration (BLE)', c: 'var(--bad)', src: 'notebook' },
   { k: 'minmax', name: 'Min-max (BLE)', c: 'var(--warn)', src: 'new' },
 ];
+// Baselines: shown on the floor plan only (the bootstrap leaves them out: the centroid never moves).
+const BASELINES = [
+  { k: 'nearest', name: 'Nearest anchor (Wi-Fi)', c: 'var(--primary-strong)', src: 'baseline' },
+  { k: 'centroid', name: 'Anchor centroid (no signal)', c: 'var(--muted)', src: 'baseline' },
+];
+const ALL_METHODS = [...METHODS, ...BASELINES];
 
 const SECTIONS = [['top', 'Overview', '◎'], ['floor', 'Floor plan', '⌖'], ['pathloss', 'Path loss', '∿'], ['spread', 'Spread', '⁘'], ['samples', 'Samples', '▥'], ['hall', 'Moving', '≋'], ['kalman', 'Kalman', '◷'], ['limits', 'Limits', '!']];
 
@@ -203,13 +209,13 @@ function FloorPlan() {
       </div>
       <div className="grid2">
         <div>
-          <svg ref={svg} className="chart" viewBox={`0 0 ${FP.W} ${FP.H}`} role="img" aria-label="Floor plan with anchors, true tag position and three position estimates" style={{ overflow: 'hidden', touchAction: 'none', borderRadius: 12, background: 'var(--surface-strong)' }}
+          <svg ref={svg} className="chart" viewBox={`0 0 ${FP.W} ${FP.H}`} role="img" aria-label="Floor plan with anchors, true tag position, three position estimates and two baselines" style={{ overflow: 'hidden', touchAction: 'none', borderRadius: 12, background: 'var(--surface-strong)' }}
             onPointerMove={move} onPointerUp={() => setDrag(null)} onPointerLeave={() => setDrag(null)}>
             {grid.map((v) => <g key={v}><line className="axis" x1={sx(v)} x2={sx(v)} y1={0} y2={FP.H} /><line className="axis" x1={0} x2={FP.W} y1={sy(v)} y2={sy(v)} /></g>)}
             {[0, 1, 2].map((v) => <text key={v} x={sx(v) + 3} y={FP.H - 6}>{v} m</text>)}
             {anchors.map((a, i) => <circle key={i} cx={sx(a.x)} cy={sy(a.y)} r={est.rBle[i] * scale} fill="none" stroke="var(--bad)" strokeOpacity="0.45" strokeDasharray="5 4" />)}
             {box[0] <= box[2] && box[1] <= box[3] && <rect x={sx(box[0])} y={sy(box[3])} width={Math.max(1, (box[2] - box[0]) * scale)} height={Math.max(1, (box[3] - box[1]) * scale)} fill="var(--warn)" opacity="0.18" stroke="var(--warn)" />}
-            {METHODS.map((m) => est[m.k] && <line key={m.k} x1={sx(truth.x)} y1={sy(truth.y)} x2={sx(est[m.k].x)} y2={sy(est[m.k].y)} stroke={m.c} strokeOpacity="0.5" />)}
+            {ALL_METHODS.map((m) => est[m.k] && <line key={m.k} x1={sx(truth.x)} y1={sy(truth.y)} x2={sx(est[m.k].x)} y2={sy(est[m.k].y)} stroke={m.c} strokeOpacity="0.5" />)}
             <g {...handle('truth')} aria-label={`True tag at ${truth.x}, ${truth.y}`}>
               <circle cx={sx(truth.x)} cy={sy(truth.y)} r="11" fill="var(--good)" opacity="0.2" />
               <circle cx={sx(truth.x)} cy={sy(truth.y)} r="6" fill="var(--good)" />
@@ -220,11 +226,11 @@ function FloorPlan() {
                 <text x={sx(a.x)} y={sy(a.y) + 4} textAnchor="middle" style={{ fill: 'var(--bg)', fontWeight: 700 }}>{i + 1}</text>
               </g>
             ))}
-            {METHODS.map((m) => est[m.k] && <circle key={m.k} cx={sx(est[m.k].x)} cy={sy(est[m.k].y)} r="5.5" fill={m.c} stroke="var(--surface-strong)" strokeWidth="2" pointerEvents="none" />)}
+            {ALL_METHODS.map((m) => est[m.k] && <circle key={m.k} cx={sx(est[m.k].x)} cy={sy(est[m.k].y)} r="5.5" fill={m.c} stroke="var(--surface-strong)" strokeWidth="2" pointerEvents="none" />)}
           </svg>
           <div className="legend">
             <span><i style={{ background: 'var(--text)' }} />Anchors</span><span><i style={{ background: 'var(--good)' }} />True tag</span>
-            {METHODS.map((m) => <span key={m.k}><i style={{ background: m.c }} />{m.name}</span>)}
+            {ALL_METHODS.map((m) => <span key={m.k}><i style={{ background: m.c }} />{m.name}</span>)}
           </div>
         </div>
         <div>
@@ -244,9 +250,9 @@ function FloorPlan() {
             <table>
               <thead><tr><th>Method</th><th>Estimate (x, y)</th><th>Error</th></tr></thead>
               <tbody>
-                {METHODS.map((m) => (
+                {ALL_METHODS.map((m) => (
                   <tr key={m.k}>
-                    <td><span style={{ color: m.c }}>●</span> {m.name}{m.src === 'new' && <> <span className="pill info">new</span></>}</td>
+                    <td><span style={{ color: m.c }}>●</span> {m.name}{m.src !== 'notebook' && <> <span className="pill info">{m.src}</span></>}</td>
                     <td className="mono">{est[m.k] ? `(${f3(est[m.k].x)}, ${f3(est[m.k].y)})` : 'collinear'}</td>
                     <td><b>{est[m.k] ? `${f3(P.dist(est[m.k], truth))} m` : 'n/a'}</b></td>
                   </tr>
@@ -257,7 +263,7 @@ function FloorPlan() {
           <div className="actions" style={{ marginTop: 14 }}>
             <button className="btn ghost" onClick={reset}>Reset to notebook settings</button>
           </div>
-          <p className="hint">Min-max is not in the notebook; it is added here from the same BLE distances because the repository description promises it. With the default settings it lands {f3(ERR.minmax)} m from the tag.</p>
+          <p className="hint">Min-max is not in the notebook; it is added here from the same BLE distances because the repository description promises it. With the default settings it lands {f3(ERR.minmax)} m from the tag{BASE.minmax.empty ? ', but its box is empty there: the three BLE squares do not overlap, so the point is only the midpoint of crossed bounds' : ''}.{!isDefault && <> At your settings the box is {est.minmax.empty ? 'empty' : 'not empty'}.</>} Two baselines set the bar: the nearest anchor ({f3(ERR.nearest)} m) and the plain anchor centroid, which ignores the signal ({f3(ERR.centroid)} m).</p>
         </div>
       </div>
     </section>
