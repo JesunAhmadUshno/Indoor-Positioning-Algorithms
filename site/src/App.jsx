@@ -105,7 +105,7 @@ function Seg({ label, value, options, onChange }) {
 export default function App() {
   useReveal();
   return (
-    <div className="wrap">
+    <div className="wrap"><a className="skip" href="#top">Skip to content</a>
       <MenuBar />
       <div className="glow" aria-hidden="true" />
       <Hero />
@@ -119,14 +119,14 @@ export default function App() {
       <Dock />
       <footer>
         Data: the recorded RSSI captures committed in this repository. Every number on this page is computed from those CSV files at build time or live in your browser, and a Node check reproduces the notebook's printed outputs before each build.
-      </footer>
+      <nav className="support" aria-label="Support this work"><a href="https://github.com/sponsors/JesunAhmadUshno">Sponsor this work</a><a href="https://github.com/sponsors/JesunAhmadUshno">Donate</a><a href="https://buymeacoffee.com/jesun">Buy Me a Coffee</a><a href="https://calendly.com/jesunahmadushno/30min">Work with me</a></nav></footer>
     </div>
   );
 }
 
 function Hero() {
   return (
-    <header className="card hero window" id="top" data-title="Indoor-Positioning-Algorithms — README">
+    <header className="card hero window" id="top" data-title="Indoor-Positioning-Algorithms - README">
       <div className="head">
         <p className="eyebrow">Coursework · recorded RSSI · one test point</p>
         <span className="pill warn">● Single test point</span>
@@ -195,7 +195,7 @@ function FloorPlan() {
   const box = est.minmax.box;
 
   return (
-    <section id="floor" className="card window reveal" data-title="floorplan.svg — live positioning">
+    <section id="floor" className="card window reveal" data-title="floorplan.svg - live positioning">
       <div className="head">
         <div>
           <p className="eyebrow">Live playground</p>
@@ -285,7 +285,7 @@ function PathLoss() {
   const y = (v) => pad.t + (1 - (Math.max(lo, Math.min(hi, v)) - lo) / (hi - lo)) * (H - pad.t - pad.b);
   const curve = Array.from({ length: 80 }, (_, i) => { const d = 0.1 + i * 0.024; return `${x(d)},${y(P.calcRss(d, a, n))}`; }).join(' ');
   return (
-    <section id="pathloss" className="card window reveal" data-title="pathloss.calc — log-distance model">
+    <section id="pathloss" className="card window reveal" data-title="pathloss.calc - log-distance model">
       <div className="head">
         <div>
           <p className="eyebrow">Signal to distance</p>
@@ -351,7 +351,7 @@ function Spread() {
   const W = 460, H = 300, x0 = 0.7, x1 = 2.3, y0 = -0.75, y1 = 0.75;
   const px = (x) => ((x - x0) / (x1 - x0)) * W, py = (y) => (1 - (y - y0) / (y1 - y0)) * H;
   return (
-    <section id="spread" className="card window reveal" data-title="bootstrap.js — how much one estimate can move">
+    <section id="spread" className="card window reveal" data-title="bootstrap.js - how much one estimate can move">
       <div className="head">
         <div>
           <p className="eyebrow">Live resampling</p>
@@ -407,7 +407,7 @@ function Samples() {
   v.forEach((r) => counts[Math.min(bins - 1, Math.floor(((r - mn) / span) * bins))]++);
   const cmax = Math.max(...counts);
   return (
-    <section id="samples" className="card window reveal" data-title="rssi_captures.csv — recorded data">
+    <section id="samples" className="card window reveal" data-title="rssi_captures.csv - recorded data">
       <div className="head">
         <div>
           <p className="eyebrow">Recorded data</p>
@@ -460,7 +460,7 @@ function Hall() {
   const rs = stats.map((s) => s.all.std / s.nz.std), ratio = [Math.min(...rs), Math.max(...rs)];
   const ticks = drop ? [-100, -90, -80, -70, -60] : [-100, -75, -50, -25, 0];
   return (
-    <section id="hall" className="card window reveal" data-title="dynamichall.csv — recorded moving capture">
+    <section id="hall" className="card window reveal" data-title="dynamichall.csv - recorded moving capture">
       <div className="head">
         <div>
           <p className="eyebrow">Recorded moving capture</p>
@@ -515,7 +515,7 @@ function Kalman() {
   const tail = rows.slice(50);
   const mErr = rms(tail.map((r) => r.z - r.truePos)), eErr = rms(tail.map((r) => r.est - r.truePos));
   return (
-    <section id="kalman" className="card window reveal" data-title="kalman.js — synthetic demo, ported from the notebook">
+    <section id="kalman" className="card window reveal" data-title="kalman.js - synthetic demo, ported from the notebook">
       <div className="head">
         <div>
           <p className="eyebrow">Live filter · synthetic data</p>
@@ -569,7 +569,7 @@ function Limits() {
     ['Min-max is new', 'The repository description promises min-max, but the notebook does not implement it. It is computed fresh on this page and labelled that way.'],
   ];
   return (
-    <section id="limits" className="card window reveal" data-title="README — limitations and reproduction">
+    <section id="limits" className="card window reveal" data-title="README - limitations and reproduction">
       <p className="eyebrow">Limitations and threats to validity</p>
       <h2>What these numbers can and cannot tell you.</h2>
       <div className="grid2" style={{ marginTop: 16 }}>
