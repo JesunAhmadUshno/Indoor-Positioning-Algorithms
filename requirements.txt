@@ -1,4 +1,4 @@
 # Tests (python -m unittest discover tests) need numpy only. The notebook also uses pandas and matplotlib.
-numpy>=1.24
+numpy>=2.5.4
 pandas>=1.5
 matplotlib>=3.6
