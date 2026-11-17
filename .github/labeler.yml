@@ -1,0 +1,15 @@
+notebooks:
+  - changed-files:
+      - any-glob-to-any-file: ["*.ipynb"]
+site:
+  - changed-files:
+      - any-glob-to-any-file: ["site/**"]
+tests:
+  - changed-files:
+      - any-glob-to-any-file: ["tests/**"]
+docs:
+  - changed-files:
+      - any-glob-to-any-file: ["docs/**", "README.md"]
+automation:
+  - changed-files:
+      - any-glob-to-any-file: [".github/**"]
